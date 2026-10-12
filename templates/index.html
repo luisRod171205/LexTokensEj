@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador Léxico - Pedidos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Analizador Léxico de Pedidos por WhatsApp</h1>
+
+        <form method="POST">
+            <label for="pedido"> Ingresa el pedido:</label>
+            <textarea name="pedido" id="pedido" rows="5">{{ texto }}</textarea>
+            <button type="submit">Analizar</button>
+        </form>
+
+        {% if resultado %}
+            <h2>Tokens reconocidos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Lexema</th>
+                        <th>Token</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lexema, token in resultado %}
+                        <tr>
+                            <td>{{ lexema }}</td>
+                            <td>{{ token }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h2>Reglas del proyecto</h2>
+
+            <h3>Reglas léxicas (tokens y expresiones regulares)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Descripción</th>
+                        <th>Ejemplo</th>
+                        <th>Expresión regular</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>NOMBRE</td><td>Nombre del cliente</td><td>Juan Pérez</td><td><code>[A-Za-záéíóúÁÉÍÓÚüÜñÑ]+(?:\s[A-Za-záéíóúÁÉÍÓÚüÜñÑ]+)*</code></td></tr>
+                    <tr><td>PRODUCTO</td><td>Palabra clave para producto</td><td>Producto</td><td><code>[Pp]roducto</code></td></tr>
+                    <tr><td>DESCRIPCION</td><td>Nombre del producto</td><td>arroz</td><td><code>[a-záéíóúñ]+</code></td></tr>
+                    <tr><td>CANTIDAD</td><td>Palabra clave para cantidad</td><td>Cantidad</td><td><code>[Cc]antidad</code></td></tr>
+                    <tr><td>NUMERO_ENTERO</td><td>Cantidad numérica</td><td>10</td><td><code>\d+</code></td></tr>
+                    <tr><td>UNIDAD</td><td>Palabra clave para unidad</td><td>Unidad</td><td><code>[Uu]nidad</code></td></tr>
+                    <tr><td>UNIDAD_MEDIDA</td><td>Unidad de medida</td><td>sacos</td><td><code>sacos|cajas|unidades</code></td></tr>
+                    <tr><td>COMA</td><td>Separador</td><td>,</td><td><code>,</code></td></tr>
+                    <tr><td>DOS_PUNTOS</td><td>Separador clave-valor</td><td>:</td><td><code>:</code></td></tr>
+                </tbody>
+            </table>
+
+            <h3>Reglas sintácticas (gramática libre de contexto)</h3>
+            <pre>
+Pedido      → Nombre Producto Cantidad Unidad
+Nombre      → NOMBRE COMA
+Producto    → PRODUCTO DOS_PUNTOS DESCRIPCION COMA
+Cantidad    → CANTIDAD DOS_PUNTOS NUMERO_ENTERO COMA
+Unidad      → UNIDAD DOS_PUNTOS UNIDAD_MEDIDA
+            </pre>
+
+            <h3>Reglas de validación</h3>
+            <ul>
+                <li>El pedido debe comenzar con el nombre del cliente.</li>
+                <li>Luego debe venir la palabra clave <code>Producto</code> seguida de dos puntos y el nombre del producto.</li>
+                <li>Luego <code>Cantidad</code> seguida de dos puntos y un número entero.</li>
+                <li>Luego <code>Unidad</code> seguida de dos puntos y una unidad de medida válida (<code>sacos</code>, <code>cajas</code> o <code>unidades</code>).</li>
+                <li>Los campos deben estar separados por comas.</li>
+            </ul>
+        {% endif %}
+    </div>
+</body>
+</html>
