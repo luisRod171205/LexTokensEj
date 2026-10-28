@@ -3,129 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analizador Léxico Mixto - AFD Completo</title>
+    <title>Analizador Léxico - Pedidos por Códigos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; text-align: center; }
-        h2 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 30px; }
-        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: monospace; font-size: 14px; box-sizing: border-box; }
-        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;}
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1, h2, h3, h4 { color: #2c3e50; }
+        h2 { border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 30px; }
+        textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: monospace; font-size: 14px; box-sizing: border-box; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; transition: background 0.3s;}
         button:hover { background: #2980b9; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #3498db; color: white; }
-        .automata-container { background: #f9f9f9; border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 25px; text-align: center; overflow-x: auto; }
-        .regex-box { background: #e8f4fd; padding: 10px; border-left: 4px solid #3498db; font-family: monospace; font-size: 16px; margin: 10px 0; display: inline-block; }
-        .svg-wrapper { display: flex; justify-content: center; margin: 15px 0; background: white; padding: 15px; border-radius: 5px; border: 1px solid #eee;}
-        .error-row td { background-color: #ffebee; color: #c62828; font-weight: bold; }
+        th { background: #f8f9fa; color: #2c3e50; font-weight: bold; }
         
-        /* Estilos para la Quíntupla y Tablas */
-        .quintupla-container { margin-top: 20px; text-align: left; background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }
-        .quintupla-container ul { list-style-type: none; padding-left: 0; }
-        .quintupla-container li { margin-bottom: 8px; font-family: monospace; }
-        .tabla-transiciones th, .tabla-transiciones td { text-align: center; }
+        /* Tabla de tokens limpia */
+        .error-row td { color: #c62828; font-weight: bold; }
+        
+        /* Estilos de las tarjetas de autómatas */
+        .automata-card { background: #f9f9f9; border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 15px; text-align: center; }
+        .regex-box { background: #e8f4fd; padding: 10px; border-left: 4px solid #3498db; font-family: monospace; font-size: 16px; margin: 10px 0; display: inline-block; }
+        .svg-wrapper { display: flex; justify-content: center; margin: 15px 0; background: white; padding: 15px; border-radius: 5px; border: 1px solid #eee; overflow-x: auto; }
+        
+        /* Estilos para la Tabla Matricial */
+        .matrix-table th { text-align: center; background: #e3f2fd; }
+        .matrix-table td { text-align: center; }
+        .matrix-table td:first-child { font-weight: bold; background: #fafafa; }
+        .init-state { background-color: #fff9c4 !important; } /* Amarillo para estado inicial */
+        .final-state { background-color: #c8e6c9 !important; } /* Verde para estado final */
+
+        /* Estilos de los catálogos */
+        .catalog-container { display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;}
+        .catalog-box { flex: 1; min-width: 250px; background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }
+        .catalog-box ul { list-style-type: none; padding-left: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 14px;}
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📋 Analizador Léxico y Sintáctico</h1>
-        <p style="text-align: center; color: #666;">Generación de Autómatas, Quíntuplas y Tablas</p>
+        <h1>📋 Analizador Léxico - Pedidos por Códigos</h1>
 
-        <h2>1. Ingreso de Datos</h2>
-        <textarea id="inputText">Luis, Producto: arroz, Cantidad: 10, Unidad: bolsas</textarea>
-        <button onclick="analizar()">🔍 Analizar y Generar</button>
+        <h2>1. Catálogos del Sistema</h2>
+        <div class="catalog-container">
+            <div class="catalog-box">
+                <h4>📍 Códigos de Distrito (D)</h4>
+                <ul>
+                    <li>D01: Lima Norte</li><li>D02: Lima Sur</li>
+                    <li>D03: Lima Este</li><li>D04: Callao</li>
+                    <li>D05: Surco</li><li>D06: San Isidro</li>
+                </ul>
+            </div>
+            <div class="catalog-box">
+                <h4>📦 Códigos de Productos (P)</h4>
+                <ul>
+                    <li>P01: Arroz</li><li>P02: Tomate</li><li>P03: Fideo</li>
+                    <li>P04: Aceite</li><li>P05: Sal</li><li>P06: Azúcar</li>
+                    <li>P07: Lentejas</li><li>P08: Atún</li><li>P09: Harina</li>
+                    <li>P10: Leche</li><li>P11: Café</li><li>P12: Té</li>
+                </ul>
+            </div>
+            <div class="catalog-box">
+                <h4>⚖️ Códigos de Unidades (U)</h4>
+                <ul>
+                    <li>U01: Sacos</li><li>U02: Cajas</li>
+                    <li>U04: Bolsas</li><li>U05: Kilos</li><li>U06: Litros</li>
+                </ul>
+            </div>
+        </div>
 
-        <h2 id="resultados-title" style="display:none;">2. Tokens y Lexemas</h2>
-        <div id="tokens-table" style="display:none;">
+        <h2>2. Ingreso de Datos</h2>
+        <textarea id="inputText">Luis, D01, P01, C10, U01, P02, C5, U05</textarea>
+        <button onclick="analizar()">🔍 Analizar Pedido</button>
+
+        <h2 id="resultados-title" style="display:none;">3. Tokens y Lexemas</h2>
+        <div id="tokens-table-container" style="display:none;">
             <table>
                 <thead>
-                    <tr><th>Lexema</th><th>Token</th><th>Expresión Regular</th></tr>
+                    <tr><th>Pos</th><th>Lexema</th><th>Token</th><th>Expresión Regular</th></tr>
                 </thead>
                 <tbody id="tokens-body"></tbody>
             </table>
         </div>
 
-        <h2 id="automatas-title" style="display:none;">3. Autómatas, Quíntuplas y Tablas</h2>
+        <h2 id="automatas-title" style="display:none;">4. Autómatas y Tablas de Transición</h2>
         <div id="automatas-container"></div>
     </div>
 
     <script>
-        // --- 1. DEFINICIÓN DE TOKENS ---
+        // --- 1. DEFINICIÓN DE TOKENS (Sin prefijo COD_) ---
         const TOKENS_DEF = [
-            { token: 'PRODUCTO', regex: /^[Pp]roducto/, erText: '[Pp]roducto', tipoGrafico: 'estatico' },
-            { token: 'CANTIDAD', regex: /^[Cc]antidad/, erText: '[Cc]antidad', tipoGrafico: 'estatico' },
-            { token: 'UNIDAD', regex: /^[Uu]nidad/, erText: '[Uu]nidad', tipoGrafico: 'estatico' },
-            { token: 'UNIDAD_MEDIDA', regex: /^(sacos|cajas|unidades|bolsas)/, erText: '(sacos|cajas|unidades|bolsas)', tipoGrafico: 'estatico' },
             { token: 'COMA', regex: /^,/, erText: ',', tipoGrafico: 'estatico' },
-            { token: 'DOS_PUNTOS', regex: /^:/, erText: ':', tipoGrafico: 'estatico' },
-            { token: 'NUMERO_ENTERO', regex: /^\d+/, erText: '[0-9]+', tipoGrafico: 'dinamico' },
-            { token: 'NOMBRE', regex: /^[A-Za-z]+(\s[A-Za-z]+)*/, erText: '[A-Za-z]+(\\s[A-Za-z]+)*', tipoGrafico: 'dinamico' },
-            { token: 'DESCRIPCION', regex: /^[A-Za-z]+/, erText: '[A-Za-z]+', tipoGrafico: 'dinamico' }
+            
+            // Códigos dinámicos
+            { token: 'DISTRITO', regex: /^D0[1-6]/, erText: 'D0[1-6]', tipoGrafico: 'dinamico' },
+            { token: 'PRODUCTO', regex: /^P(0[1-9]|1[0-2])/, erText: 'P(0[1-9]|1[0-2])', tipoGrafico: 'dinamico' },
+            { token: 'CANTIDAD', regex: /^C\d+/, erText: 'C\\d+', tipoGrafico: 'dinamico' },
+            { token: 'UNIDAD', regex: /^U0[12456]/, erText: 'U0[12456]', tipoGrafico: 'dinamico' },
+            
+            // Nombre (debe ir al final para no capturar los códigos)
+            { token: 'NOMBRE', regex: /^[A-Za-z]+(\s[A-Za-z]+)*/, erText: '[A-Za-z]+(\\s[A-Za-z]+)*', tipoGrafico: 'dinamico' }
         ];
 
-        // --- 2. CONFIGURACIÓN DE AUTÓMATAS ---
-        // Al definir los autómatas estáticos, también extraemos sus datos estructurados para la quíntupla.
+        // --- 2. DATOS ESTRUCTURADOS DE AUTÓMATAS ESTÁTICOS ---
         const AUTOMATAS_ESTATICOS = {
-            'PRODUCTO': {
-                afnd: genPalabraAFND('PRODUCTO', 'P | p', 'r', 'o', 'd', 'u', 'c', 't', 'o'),
-                afd: genPalabraAFD('PRODUCTO', 'P | p', 'r', 'o', 'd', 'u', 'c', 't', 'o'),
-                dataAFD: { estados: ['A','B','C','D','E','F','G','H','I'], alfabeto: ['P','p','r','o','d','u','c','t','o'], inicial: 'A', finales: ['I'], transiciones: [['A','P,p','B'],['B','r','C'],['C','o','D'],['D','d','E'],['E','u','F'],['F','c','G'],['G','t','H'],['H','o','I']] }
-            },
-            'CANTIDAD': {
-                afnd: genPalabraAFND('CANTIDAD', 'C | c', 'a', 'n', 't', 'i', 'd', 'a', 'd'),
-                afd: genPalabraAFD('CANTIDAD', 'C | c', 'a', 'n', 't', 'i', 'd', 'a', 'd'),
-                dataAFD: { estados: ['A','B','C','D','E','F','G','H','I'], alfabeto: ['C','c','a','n','t','i','d','a','d'], inicial: 'A', finales: ['I'], transiciones: [['A','C,c','B'],['B','a','C'],['C','n','D'],['D','t','E'],['E','i','F'],['F','d','G'],['G','a','H'],['H','d','I']] }
-            },
-            'UNIDAD': {
-                afnd: genPalabraAFND('UNIDAD', 'U | u', 'n', 'i', 'd', 'a', 'd'),
-                afd: genPalabraAFD('UNIDAD', 'U | u', 'n', 'i', 'd', 'a', 'd'),
-                dataAFD: { estados: ['A','B','C','D','E','F','G'], alfabeto: ['U','u','n','i','d','a','d'], inicial: 'A', finales: ['G'], transiciones: [['A','U,u','B'],['B','n','C'],['C','i','D'],['D','d','E'],['E','a','F'],['F','d','G']] }
-            },
-            'COMA': {
-                afnd: genSimpleAFND('COMA', ','),
-                afd: genSimpleAFD('COMA', ','),
-                dataAFD: { estados: ['A','B'], alfabeto: [','], inicial: 'A', finales: ['B'], transiciones: [['A',',','B']] }
-            },
-            'DOS_PUNTOS': {
-                afnd: genSimpleAFND('DOS_PUNTOS', ':'),
-                afd: genSimpleAFD('DOS_PUNTOS', ':'),
-                dataAFD: { estados: ['A','B'], alfabeto: [':'], inicial: 'A', finales: ['B'], transiciones: [['A',':','B']] }
-            },
-            'UNIDAD_MEDIDA': {
-                afnd: `digraph AFND_UNIDAD_MEDIDA { rankdir=LR; node [shape = circle]; start [shape=point]; start -> q0;
-                    q0 -> q1 [label="s"]; q1 -> q2 [label="a"]; q2 -> q3 [label="c"]; q3 -> q4 [label="o"]; q4 -> q5 [label="s"];
-                    q0 -> q6 [label="c"]; q6 -> q7 [label="a"]; q7 -> q8 [label="j"]; q8 -> q9 [label="a"]; q9 -> q10 [label="s"];
-                    q0 -> q11 [label="u"]; q11 -> q12 [label="n"]; q12 -> q13 [label="i"]; q13 -> q14 [label="d"]; q14 -> q15 [label="a"]; q15 -> q16 [label="d"]; q16 -> q17 [label="e"]; q17 -> q18 [label="s"];
-                    q0 -> q20 [label="b"]; q20 -> q21 [label="o"]; q21 -> q22 [label="l"]; q22 -> q23 [label="s"]; q23 -> q24 [label="a"]; q24 -> q25 [label="s"];
-                    q5 -> q19 [label="ε"]; q10 -> q19 [label="ε"]; q18 -> q19 [label="ε"]; q25 -> q19 [label="ε"]; q19 [shape=doublecircle]; }`,
-                afd: `digraph AFD_UNIDAD_MEDIDA { rankdir=LR; node [shape = circle]; start [shape=point]; start -> A;
-                    A -> S1 [label="s"]; A -> C1 [label="c"]; A -> U1 [label="u"]; A -> B1 [label="b"];
-                    S1 -> S2 [label="a"]; S2 -> S3 [label="c"]; S3 -> S4 [label="o"]; S4 -> F [label="s"];
-                    C1 -> C2 [label="a"]; C2 -> C3 [label="j"]; C3 -> C4 [label="a"]; C4 -> F [label="s"];
-                    U1 -> U2 [label="n"]; U2 -> U3 [label="i"]; U3 -> U4 [label="d"]; U4 -> U5 [label="a"]; U5 -> U6 [label="d"]; U6 -> U7 [label="e"]; U7 -> F [label="s"];
-                    B1 -> B2 [label="o"]; B2 -> B3 [label="l"]; B3 -> B4 [label="s"]; B4 -> B5 [label="a"]; B5 -> F [label="s"]; F [shape=doublecircle]; }`,
-                dataAFD: { 
-                    estados: ['A','S1','S2','S3','S4','C1','C2','C3','C4','U1','U2','U3','U4','U5','U6','U7','B1','B2','B3','B4','B5','F'], 
-                    alfabeto: ['s','a','c','o','j','u','n','i','d','e','b','l'], 
-                    inicial: 'A', finales: ['F'], 
-                    transiciones: [
-                        ['A','s','S1'],['A','c','C1'],['A','u','U1'],['A','b','B1'],
-                        ['S1','a','S2'],['S2','c','S3'],['S3','o','S4'],['S4','s','F'],
-                        ['C1','a','C2'],['C2','j','C3'],['C3','a','C4'],['C4','s','F'],
-                        ['U1','n','U2'],['U2','i','U3'],['U3','d','U4'],['U4','a','U5'],['U5','d','U6'],['U6','e','U7'],['U7','s','F'],
-                        ['B1','o','B2'],['B2','l','B3'],['B3','s','B4'],['B4','a','B5'],['B5','s','F']
-                    ] 
-                }
-            }
+            'COMA': { dataAFD: { estados: ['q0','q1'], inicial: 'q0', finales: ['q1'], alfabeto: [','], transiciones: {'q0':{',':'q1'}} } }
         };
 
-        function genPalabraAFND(nombre, ...letras) { let dot = `digraph ${nombre} { rankdir=LR; node [shape = circle]; start [shape=point]; start -> q0;`; for (let i = 0; i < letras.length; i++) { dot += `q${i} -> q${i+1} [label="${letras[i]}"];`; } dot += `q${letras.length} -> q${letras.length+1} [label="ε"]; q${letras.length+1} [shape=doublecircle]; }`; return dot; }
-        function genPalabraAFD(nombre, ...letras) { let dot = `digraph ${nombre} { rankdir=LR; node [shape = circle]; start [shape=point]; start -> A;`; for (let i = 0; i < letras.length; i++) { let current = String.fromCharCode(65 + i); let next = String.fromCharCode(65 + i + 1); dot += `${current} -> ${next} [label="${letras[i]}"];`; } dot += `${String.fromCharCode(65 + letras.length)} [shape=doublecircle]; }`; return dot; }
+        // Funciones auxiliares para gráficos estáticos
         function genSimpleAFND(nombre, char) { return `digraph ${nombre} { rankdir=LR; node [shape = circle]; start [shape=point]; start -> q0; q0 -> q1 [label="${char}"]; q1 -> q2 [label="ε"]; q2 [shape=doublecircle]; }`; }
-        function genSimpleAFD(nombre, char) { return `digraph ${nombre} { rankdir=LR; node [shape = circle]; start [shape=point]; start -> A; A -> B [label="${char}"]; B [shape=doublecircle]; }`; }
 
         // --- 3. LÓGICA DEL ANALIZADOR ---
         async function analizar() {
@@ -135,14 +120,21 @@
             
             document.getElementById('automatas-title').style.display = 'block';
             const container = document.getElementById('automatas-container');
-            container.innerHTML = '<p>Generando autómatas y tablas...</p>';
+            container.innerHTML = '<p>Generando autómatas...</p>';
             
             setTimeout(async () => {
                 container.innerHTML = '';
+                const tokensUnicos = [];
+                const vistos = new Set();
                 for (const t of tokensEncontrados) {
-                    if (t.token !== 'ERROR') {
-                        await dibujarAutomataCompleto(t.lexema, t.token, t.er, t.tipo, container);
+                    if (t.token !== 'ERROR' && !vistos.has(t.token)) {
+                        tokensUnicos.push(t);
+                        vistos.add(t.token);
                     }
+                }
+
+                for (const t of tokensUnicos) {
+                    await dibujarAutomataCompleto(t.lexema, t.token, t.er, t.tipo, container);
                 }
             }, 300);
         }
@@ -157,13 +149,13 @@
                     const regex = new RegExp('^' + def.regex.source);
                     const coincidencia = regex.exec(texto.substring(pos));
                     if (coincidencia) {
-                        resultado.push({ lexema: coincidencia[0], token: def.token, er: def.erText, tipo: def.tipoGrafico });
+                        resultado.push({ pos: pos, lexema: coincidencia[0], token: def.token, er: def.erText, tipo: def.tipoGrafico });
                         pos += coincidencia[0].length;
                         match = true;
                         break;
                     }
                 }
-                if (!match) { resultado.push({ lexema: texto[pos], token: 'ERROR', er: 'N/A', tipo: 'error' }); pos++; }
+                if (!match) { resultado.push({ pos: pos, lexema: texto[pos], token: 'ERROR', er: 'N/A', tipo: 'error' }); pos++; }
             }
             return resultado;
         }
@@ -174,51 +166,45 @@
             tokens.forEach(t => {
                 const tr = document.createElement('tr');
                 if(t.token === 'ERROR') tr.className = 'error-row';
-                tr.innerHTML = `<td>${t.lexema}</td><td>${t.token}</td><td><code>${t.er}</code></td>`;
+                tr.innerHTML = `<td>${t.pos}</td><td>${t.lexema}</td><td><strong>${t.token}</strong></td><td><code>${t.er}</code></td>`;
                 tbody.appendChild(tr);
             });
             document.getElementById('resultados-title').style.display = 'block';
-            document.getElementById('tokens-table').style.display = 'block';
+            document.getElementById('tokens-table-container').style.display = 'block';
         }
 
-        // --- 4. GENERACIÓN DE GRÁFICOS, QUÍNTUPLAS Y TABLAS ---
+        // --- 4. GENERACIÓN DE GRÁFICOS Y TABLA MATRICIAL ---
         async function dibujarAutomataCompleto(lexema, token, er, tipo, container) {
             const viz = new Viz();
             let dotAFND = '', dotAFD = '';
-            let dataAFD = null; // Aquí guardaremos la quíntupla y transiciones
+            let dataAFD = null;
 
             if (tipo === 'estatico') {
                 const config = AUTOMATAS_ESTATICOS[token];
                 if (!config) return;
-                dotAFND = config.afnd;
-                dotAFD = config.afd;
-                dataAFD = config.dataAFD; // Obtenemos los datos estructurados
+                
+                dotAFND = genSimpleAFND(token, ',');
+                dotAFD = `digraph AFD_${token} { rankdir=LR; node [shape = circle]; start [shape=point]; start -> q0; q0 -> q1 [label=","]; q1 [shape=doublecircle]; }`;
+                dataAFD = config.dataAFD;
             } else {
-                // Dinámico (Nombres, Números)
+                // Autómata Dinámico
                 dotAFND = `digraph AFND_DINAMICO { rankdir=LR; node [shape = circle]; start [shape=point]; start -> q0;`;
-                for (let i = 0; i < lexema.length; i++) {
-                    let char = lexema[i]; let label = (char === ' ') ? '␣' : char; 
-                    dotAFND += `q${i} -> q${i+1} [label="${label}"];`;
-                }
+                for (let i = 0; i < lexema.length; i++) { let char = lexema[i]; let label = (char === ' ') ? '␣' : char; dotAFND += `q${i} -> q${i+1} [label="${label}"];`; }
                 dotAFND += `q${lexema.length} -> q${lexema.length+1} [label="ε"]; q${lexema.length+1} [shape=doublecircle]; }`;
 
                 dotAFD = `digraph AFD_DINAMICO { rankdir=LR; node [shape = circle]; start [shape=point]; start -> A;`;
-                
-                // Construir datos de AFD dinámicos
-                let estados = []; let alfabeto = []; let transiciones = [];
+                let estados = []; let alfabeto = []; let transiciones = {};
                 for (let i = 0; i < lexema.length; i++) {
                     let char = lexema[i]; let label = (char === ' ') ? '␣' : char; 
                     let current = String.fromCharCode(65 + i); let next = String.fromCharCode(65 + i + 1);
                     dotAFD += `${current} -> ${next} [label="${label}"];`;
-                    
-                    estados.push(current);
-                    if(!alfabeto.includes(label)) alfabeto.push(label);
-                    transiciones.push([current, label, next]);
+                    estados.push(current); if(!alfabeto.includes(label)) alfabeto.push(label);
+                    if(!transiciones[current]) transiciones[current] = {};
+                    transiciones[current][label] = next;
                 }
                 let finalState = String.fromCharCode(65 + lexema.length);
                 dotAFD += `${finalState} [shape=doublecircle]; }`;
                 estados.push(finalState);
-
                 dataAFD = { estados: estados, alfabeto: alfabeto, inicial: 'A', finales: [finalState], transiciones: transiciones };
             }
 
@@ -226,50 +212,46 @@
                 const afndSvg = await viz.renderSVGElement(dotAFND);
                 const afdSvg = await viz.renderSVGElement(dotAFD);
 
-                const div = document.createElement('div');
-                div.className = 'automata-container';
-                
-                // Generar la sección HTML de la quíntupla
-                let htmlQuintupla = '';
-                if (dataAFD) {
-                    htmlQuintupla = `
-                        <div class="quintupla-container">
-                            <h4>Quíntupla del AFD</h4>
-                            <p style="margin-bottom:10px; font-size:0.9em; color:#555;">M = (Q, Σ, δ, q₀, F)</p>
-                            <ul>
-                                <li><strong>Q (Estados):</strong> { ${dataAFD.estados.join(', ')} }</li>
-                                <li><strong>Σ (Alfabeto):</strong> { ${dataAFD.alfabeto.join(', ')} }</li>
-                                <li><strong>q₀ (Inicial):</strong> ${dataAFD.inicial}</li>
-                                <li><strong>F (Finales):</strong> { ${dataAFD.finales.join(', ')} }</li>
-                                <li><strong>δ (Transiciones):</strong> Ver tabla abajo</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="quintupla-container">
-                            <h4>Tabla de Transiciones del AFD</h4>
-                            <table class="tabla-transiciones">
-                                <thead>
-                                    <tr><th>Estado Origen</th><th>Símbolo</th><th>Estado Destino</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${dataAFD.transiciones.map(t => `<tr><td>${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td></tr>`).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                }
+                // Tabla Matricial
+                let tableHeader = `<tr><th>Estado actual</th>`;
+                dataAFD.alfabeto.forEach((sym, index) => { tableHeader += `<th>Entrada ${index + 1}</th>`; });
+                tableHeader += `</tr>`;
 
+                let tableBody = '';
+                dataAFD.estados.forEach(estado => {
+                    let rowClass = (estado === dataAFD.inicial) ? 'init-state' : (dataAFD.finales.includes(estado) ? 'final-state' : '');
+                    let labelEstado = estado;
+                    if (estado === dataAFD.inicial) labelEstado += ' (inicial)';
+                    if (dataAFD.finales.includes(estado)) labelEstado += ' (aceptación)';
+                    
+                    tableBody += `<tr class="${rowClass}"><td>${labelEstado}</td>`;
+                    
+                    dataAFD.alfabeto.forEach(sym => {
+                        let nextState = (dataAFD.transiciones[estado] && dataAFD.transiciones[estado][sym]) ? dataAFD.transiciones[estado][sym] : '-';
+                        tableBody += `<td>${nextState}</td>`;
+                    });
+                    tableBody += `</tr>`;
+                });
+
+                const div = document.createElement('div');
+                div.className = 'automata-card';
                 div.innerHTML = `
-                    <h3>Token: ${token} <span style="color:#666; font-size:0.8em;">(Lexema: "${lexema}")</span></h3>
+                    <h3>Token: ${token} <span style="color:#666; font-size:0.8em;">(Ejemplo: "${lexema}")</span></h3>
                     <div class="regex-box"><strong>ER:</strong> ${er}</div>
                     
-                    <h4>AFND</h4>
+                    <h4>Autómata Finito No Determinista (AFND)</h4>
                     <div class="svg-wrapper" id="afnd-${token}-${lexema.replace(/\s/g, '')}"></div>
                     
-                    <h4>AFD</h4>
+                    <h4>Autómata Finito Determinista (AFD)</h4>
                     <div class="svg-wrapper" id="afd-${token}-${lexema.replace(/\s/g, '')}"></div>
                     
-                    ${htmlQuintupla}
+                    <h4>Tabla de Transición</h4>
+                    <div style="overflow-x:auto;">
+                        <table class="matrix-table">
+                            <thead>${tableHeader}</thead>
+                            <tbody>${tableBody}</tbody>
+                        </table>
+                    </div>
                 `;
                 container.appendChild(div);
 
